@@ -76,8 +76,6 @@ enum Mode
 
 Mode editMode = TRANSLATE;
 
-void drawModel(unsigned int name, unsigned int textureName, unsigned int objectID, GLuint program);
-
 Entity CreateEntity(GLuint mesh, GLuint texture, GLuint objectID)
 {
     Entity entity;
@@ -93,6 +91,7 @@ Entity CreateEntity(GLuint mesh, GLuint texture, GLuint objectID)
     entity.mesh = mesh;
     entity.texture = texture;
     entity.objectID = objectID;
+    entity.cull = GL_BACK;
 
     return entity;
 }
@@ -101,10 +100,18 @@ void DrawEntity(const Entity &entity, GLuint program)
 {
     modelview.push();
     modelview.translate(entity.translation);
-    modelview.rotate(entity.rotation[0], 1, 0, 0);
     modelview.rotate(entity.rotation[1], 0, 1, 0);
     modelview.rotate(entity.rotation[2], 0, 0, 1);
+    modelview.rotate(entity.rotation[0], 1, 0, 0);
     modelview.scale(entity.scale);
+
+    if (entity.cull == GL_NONE)
+        glDisable(GL_CULL_FACE);
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(entity.cull);
+    }
 
     GLint locDiffuseColor = glGetUniformLocation(program, "diffuseColor");
     if (locDiffuseColor >= 0)
@@ -235,6 +242,7 @@ void init()
     chair1.translation = gl::Vector3(0, 0.555590, -1);
     chair1.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     chair1.shininess = 30;
+    chair1.cull = GL_NONE;
     entities.push_back(chair1);
 
     Entity chair2 = CreateEntity(CHAIR_MESH, CHAIR_TEXTURE, 8);
@@ -242,6 +250,7 @@ void init()
     chair2.rotation = gl::Vector3(0, 180, 0);
     chair2.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     chair2.shininess = 30;
+    chair2.cull = GL_NONE;
     entities.push_back(chair2);
 
     Entity skeleton1 = CreateEntity(SKELETON_MESH, SKELETON_TEXTURE, 9);

@@ -37,6 +37,7 @@ struct Entity
     GLuint mesh;
     GLuint texture;
     GLuint objectID;
+    GLenum cull;
 };
 
 #define OFFSET(Type, member) \
