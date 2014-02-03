@@ -4,10 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
-#include <vector>
 
-#include <gl/glew.h>
 #include "stb_image.h"
 
 void fatalError(std::string message)
@@ -185,8 +182,12 @@ void loadTexture(unsigned int name, const std::string &filename)
         fatalError("Failed to load texture '" + filename + "'");
     std::cout << "Loaded Texture '" << filename << "' width: " << width << " height: " << height << " components: " << comp << std::endl;
     glBindTexture(GL_TEXTURE_2D, tex[name]);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, width, height);
+    checkError("glew 0");
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, width, height);
+    checkError("glew 1");
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    checkError("glew 2");
     stbi_image_free(pixels);
     glBindTexture(GL_TEXTURE_2D, 0);
+    checkError("glew 3");
 }

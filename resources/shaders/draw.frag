@@ -45,7 +45,7 @@ void main()
 	vec3 totalDiffuseEffect = vec3(0, 0, 0);
 	vec3 totalSpecularEffect = vec3(0, 0, 0);
 	vec3 ambientEffect = ambientLight * diffuseColor;
-	for (int i = 0; i < numLights; ++i)
+	for (uint i = 0u; i < numLights; ++i)
 	{
 		vec3 diffuseEffect;
 		vec3 specularEffect;

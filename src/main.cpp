@@ -1,6 +1,9 @@
 
 #include "Util.h"
 
+#include <cmath>
+#include <iostream>
+
 int screenWidth = 1024;
 int screenHeight = 768;
 
@@ -98,10 +101,10 @@ void DrawEntity(const Entity &entity, GLuint program)
 {
     modelview.push();
     modelview.translate(entity.translation);
-    modelview.scale(entity.scale);
     modelview.rotate(entity.rotation[0], 1, 0, 0);
     modelview.rotate(entity.rotation[1], 0, 1, 0);
     modelview.rotate(entity.rotation[2], 0, 0, 1);
+    modelview.scale(entity.scale);
 
     GLint locDiffuseColor = glGetUniformLocation(program, "diffuseColor");
     if (locDiffuseColor >= 0)
@@ -418,7 +421,7 @@ void mouseMovement(int x, int y)
 {
     if (mouseRotate)
     {
-        const float speed = 2.0f;
+        const float speed = 4.0f;
 
         float dx = (x - lastRX == 0) ? 0 : abs(x - lastRX) / (x - lastRX);
         float dy = (y - lastRY == 0) ? 0 : abs(y - lastRY) / (y - lastRY);
@@ -446,7 +449,7 @@ void mouseMovement(int x, int y)
 
     if (mouseZoom)
     {
-        const float speed = 0.1f;
+        const float speed = 0.2f;
 
         float dy = (y - lastZY == 0) ? 0 : abs(y - lastZY) / (y - lastZY);
         lastZY = y;
@@ -460,7 +463,7 @@ void mouseMovement(int x, int y)
 
     if (mouseTranslate)
     {
-        const float speed = 0.1f;
+        const float speed = 0.2f;
 
         float dx = (x - lastTX == 0) ? 0 : abs(x - lastTX) / (x - lastTX);
         float dy = (y - lastTY == 0) ? 0 : abs(y - lastTY) / (y - lastTY);
@@ -511,74 +514,77 @@ void key(unsigned char key, int x, int y)
     {
         hidecursor = !hidecursor;
     }
-    else if (key == 'w')
+    else if (selected != 0)
     {
-        switch (editMode)
+        if (key == 'w')
         {
-        case TRANSLATE: entities[selectedIndex].translation[2] += 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[2] += 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[2] += 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[2] += 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[2] += 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[2] += 0.1f; break;
+            }
         }
-    }
-    else if (key == 's')
-    {
-        switch (editMode)
+        else if (key == 's')
         {
-        case TRANSLATE: entities[selectedIndex].translation[2] -= 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[2] -= 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[2] -= 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[2] -= 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[2] -= 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[2] -= 0.1f; break;
+            }
         }
-    }
-    else if (key == 'a')
-    {
-        switch (editMode)
+        else if (key == 'a')
         {
-        case TRANSLATE: entities[selectedIndex].translation[0] += 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[0] += 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[0] += 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[0] += 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[0] += 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[0] += 0.1f; break;
+            }
         }
-    }
-    else if (key == 'd')
-    {
-        switch (editMode)
+        else if (key == 'd')
         {
-        case TRANSLATE: entities[selectedIndex].translation[0] -= 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[0] -= 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[0] -= 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[0] -= 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[0] -= 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[0] -= 0.1f; break;
+            }
         }
-    }
-    else if (key == 'q')
-    {
-        switch (editMode)
+        else if (key == 'q')
         {
-        case TRANSLATE: entities[selectedIndex].translation[1] += 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[1] += 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[1] += 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[1] += 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[1] += 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[1] += 0.1f; break;
+            }
         }
-    }
-    else if (key == 'e')
-    {
-        switch (editMode)
+        else if (key == 'e')
         {
-        case TRANSLATE: entities[selectedIndex].translation[1] -= 0.1f; break;
-        case ROTATE: entities[selectedIndex].rotation[1] -= 1.0f; break;
-        case SCALE: entities[selectedIndex].scale[1] -= 0.1f; break;
+            switch (editMode)
+            {
+            case TRANSLATE: entities[selectedIndex].translation[1] -= 0.1f; break;
+            case ROTATE: entities[selectedIndex].rotation[1] -= 2.0f; break;
+            case SCALE: entities[selectedIndex].scale[1] -= 0.1f; break;
+            }
         }
-    }
-    else if (key == 'z')
-    {
-        std::cout << "Translate Edit Mode" << std::endl;
-        editMode = TRANSLATE;
-    }
-    else if (key == 'x')
-    {
-        std::cout << "Rotate Edit Mode" << std::endl;
-        editMode = ROTATE;
-    }
-    else if (key == 'c')
-    {
-        std::cout << "Scale Edit Mode" << std::endl;
-        editMode = SCALE;
+        else if (key == 'z')
+        {
+            std::cout << "Translate Edit Mode" << std::endl;
+            editMode = TRANSLATE;
+        }
+        else if (key == 'x')
+        {
+            std::cout << "Rotate Edit Mode" << std::endl;
+            editMode = ROTATE;
+        }
+        else if (key == 'c')
+        {
+            std::cout << "Scale Edit Mode" << std::endl;
+            editMode = SCALE;
+        }
     }
 }
 

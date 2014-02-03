@@ -2,9 +2,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -44,9 +41,6 @@ struct Entity
 
 #define OFFSET(Type, member) \
     (GLvoid *) (&((Type *) 0)->member)
-
-#define RADIANS(angle) \
-    ((angle) * 3.1415 / 180)
 
 enum
 {
