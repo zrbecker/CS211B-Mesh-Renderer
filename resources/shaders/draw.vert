@@ -15,6 +15,7 @@ void main()
 {
 	fPosition = modelview * position;
 	fTextureCoord = textureCoord;
-	fNormal = vec3(modelview * vec4(normal, 0));
+    fNormal = transpose(inverse(mat3(modelview))) * normal;
 	gl_Position = projection * modelview * position;
 }
+

@@ -28,6 +28,8 @@ void computeLightEffect(vec4 lightPos, vec3 lightColor, out vec3 diffuseEffect, 
 	else
 		L = normalize(lightPos.xyz / lightPos.w - fPosition.xyz / fPosition.w);
 	vec3 N = normalize(fNormal);
+    if (!gl_FrontFacing)
+         N = -N;
 	vec3 V = normalize(-fPosition.xyz / fPosition.w);
 	vec3 H = normalize(L + V);
 

@@ -37,7 +37,7 @@ gl::Vector4 lightPositions[NUM_LIGHTS];
 
 gl::Vector3 lightColors[NUM_LIGHTS]
 {
-    gl::Vector3(0.5, 0.5, 0.5),
+    gl::Vector3(0.5, 0.5, 1.0),
     gl::Vector3(0.5, 0.1, 0.1),
     gl::Vector3(0.1, 0.1, 0.5),
     gl::Vector3(0.1, 0.1, 0.5)
@@ -271,6 +271,7 @@ void init()
     shelves1.rotation = gl::Vector3(0, -90, 0);
     shelves1.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     shelves1.shininess = 30;
+    shelves1.cull = GL_NONE;
     entities.push_back(shelves1);
 
     Entity shelves2 = CreateEntity(SHELVES_MESH, SHELVES_TEXTURE, 12);
@@ -279,6 +280,7 @@ void init()
     shelves2.rotation = gl::Vector3(0, -90, 0);
     shelves2.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     shelves2.shininess = 30;
+    shelves2.cull = GL_NONE;
     entities.push_back(shelves2);
 
     Entity shelves3 = CreateEntity(SHELVES_MESH, SHELVES_TEXTURE, 13);
@@ -287,6 +289,7 @@ void init()
     shelves3.rotation = gl::Vector3(0, 180, 0);
     shelves3.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     shelves3.shininess = 30;
+    shelves3.cull = GL_NONE;
     entities.push_back(shelves3);
 
     Entity shelves4 = CreateEntity(SHELVES_MESH, SHELVES_TEXTURE, 14);
@@ -295,6 +298,7 @@ void init()
     shelves4.rotation = gl::Vector3(0, 180, 0);
     shelves4.specularColor = gl::Vector3(0.9, 0.9, 0.9);
     shelves4.shininess = 30;
+    shelves4.cull = GL_NONE;
     entities.push_back(shelves4);
 
     Entity chest = CreateEntity(CHEST_MESH, CHEST_TEXTURE, 15);
