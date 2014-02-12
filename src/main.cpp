@@ -627,6 +627,11 @@ int main(int argc, char *argv[])
     glGetError(); // glewInit() causes error on Mac. This clears it
 #endif
 
+    if (!glewIsSupported("GL_VERSION_3_3"))
+        fatalError(std::string("OpenGL Version String: '") + (char *)glGetString(GL_VERSION) + "' Open GL 3.3 is not supported.");
+    else
+        std::cout << "Open GL 3.3 is supported" << std::endl;
+
     init();
     reshape(screenWidth, screenHeight);
 
