@@ -1,5 +1,6 @@
 
 #include "Util.h"
+#include "gbuffer.h"
 
 #include <cmath>
 #include <iostream>
@@ -16,6 +17,10 @@ GLuint fbo[NUM_FRAMEBUFFERS];
 
 GLuint drawProgram;
 GLuint pickProgram;
+GLuint geometryProgram;
+GLuint renderPassProgram;
+
+GBuffer gbuffer;
 
 gl::Matrix4Stack modelview;
 gl::Matrix4Stack projection;
@@ -149,6 +154,7 @@ void DrawEntity(const Entity &entity, GLuint program)
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, &projection.top()[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(program, "modelview"), 1, GL_FALSE, &modelview.top()[0][0]);
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex[entity.texture]);
     glBindVertexArray(vao[entity.mesh]);
     glDrawArrays(vao_mode[entity.mesh], 0, vao_count[entity.mesh]);
@@ -189,6 +195,8 @@ void init()
     // Program Data
     drawProgram = loadProgram("resources/shaders/draw.vert", "resources/shaders/draw.frag");
     pickProgram = loadProgram("resources/shaders/pick.vert", "resources/shaders/pick.frag");
+    geometryProgram = loadProgram("resources/shaders/geometry_pass.vert", "resources/shaders/geometry_pass.frag");
+    renderPassProgram = loadProgram("resources/shaders/render_pass.vert", "resources/shaders/render_pass.frag");
 
     // Generate OpenGL objects
     glGenVertexArrays(NUM_VERTEX_OBJECTS, vao);
@@ -217,6 +225,8 @@ void init()
     loadTexture(SHELVES_TEXTURE, "resources/textures/shelves.png");
     loadTexture(CHEST_TEXTURE, "resources/textures/chest.png");
     loadTexture(SPHERE_TEXTURE, "resources/textures/sphere.png");
+
+    gbuffer.Init(screenWidth, screenHeight);
 
     // Load entities
     Entity floor = CreateEntity(FLOOR_MESH, FLOOR_TEXTURE, 2);
@@ -342,6 +352,8 @@ void reshape(int w, int h)
         fatalError("Framebuffer Status Error");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    gbuffer.Init(screenWidth, screenHeight);
 }
 
 void draw(GLuint program)
@@ -382,7 +394,35 @@ void pick()
     checkError("End of Pick");
 }
 
-void display()
+void drawGeometryBuffers()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    gbuffer.BindForReading();
+
+    GLsizei HalfWidth = (GLsizei) (screenWidth / 2.0f);
+    GLsizei HalfHeight = (GLsizei) (screenHeight / 2.0f);
+
+    gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+    glBlitFramebuffer(0, 0, screenWidth, screenHeight,
+                      0, 0, HalfWidth, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+    glBlitFramebuffer(0, 0, screenWidth, screenHeight,
+                      0, HalfHeight, HalfWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+    glBlitFramebuffer(0, 0, screenWidth, screenHeight,
+                      HalfWidth, HalfHeight, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_SPECULAR_COLOR);
+    glBlitFramebuffer(0, 0, screenWidth, screenHeight,
+                      HalfWidth, 0, screenWidth, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+}
+
+void display1()
 {
     pick();
 
@@ -393,6 +433,121 @@ void display()
     glutSwapBuffers();
 
     checkError("End of Display");
+}
+
+void display2()
+{
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    gbuffer.BindForWriting();
+    draw(geometryProgram);
+    gbuffer.UnbindForWriting();
+
+    drawGeometryBuffers();
+
+    glFlush();
+    glutSwapBuffers();
+
+    checkError("End of Display");
+}
+
+void display3()
+{
+    pick();
+
+    gbuffer.BindForWriting();
+    draw(geometryProgram);
+    gbuffer.UnbindForWriting();
+
+    gbuffer.BindForRender();
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(renderPassProgram);
+
+    GLint locScreenWidth = glGetUniformLocation(renderPassProgram, "screenWidth");
+    if (locScreenWidth >= 0)
+        glUniform1f(locScreenWidth, (float) screenWidth);
+
+    GLint locScreenHeight = glGetUniformLocation(renderPassProgram, "screenHeight");
+    if (locScreenHeight >= 0)
+        glUniform1f(locScreenHeight, (float) screenHeight);
+
+    GLint locTexPosition = glGetUniformLocation(renderPassProgram, "texPosition");
+    if (locTexPosition >= 0)
+        glUniform1i(locTexPosition, 0);
+
+    GLint locTexDiffuse = glGetUniformLocation(renderPassProgram, "texDiffuse");
+    if (locTexDiffuse >= 0)
+        glUniform1i(locTexDiffuse, 1);
+
+    GLint locTexNormal = glGetUniformLocation(renderPassProgram, "texNormal");
+    if (locTexNormal >= 0)
+        glUniform1i(locTexNormal, 2);
+
+    GLint locTexDiffuseColor = glGetUniformLocation(renderPassProgram, "texDiffuseColor");
+    if (locTexDiffuseColor >= 0)
+        glUniform1i(locTexDiffuseColor, 4);
+
+    GLint locTexSpecularColor = glGetUniformLocation(renderPassProgram, "texSpecularColor");
+    if (locTexSpecularColor >= 0)
+        glUniform1i(locTexSpecularColor, 5);
+
+    GLint locTexShininess = glGetUniformLocation(renderPassProgram, "texShininess");
+    if (locTexShininess >= 0)
+        glUniform1i(locTexShininess, 6);
+
+    GLint locAmbientLight = glGetUniformLocation(renderPassProgram, "ambientLight");
+    if (locAmbientLight >= 0)
+        glUniform3fv(locAmbientLight, 1, &ambientLight[0]);
+
+    GLint locNumLights = glGetUniformLocation(renderPassProgram, "numLights");
+    if (locNumLights >= 0)
+        glUniform1ui(locNumLights, NUM_LIGHTS);
+
+    GLint locLightPositions = glGetUniformLocation(renderPassProgram, "lightPositions");
+    if (locLightPositions >= 0)
+        glUniform4fv(locLightPositions, NUM_LIGHTS, &lightPositions[0][0]);
+
+    GLint locLightColors = glGetUniformLocation(renderPassProgram, "lightColors");
+    if (locLightColors >= 0)
+        glUniform3fv(locLightColors, NUM_LIGHTS, &lightColors[0][0]);
+
+    GLint locSelectedID = glGetUniformLocation(renderPassProgram, "selectedID");
+    if (locSelectedID >= 0)
+        glUniform1ui(locSelectedID, selected);
+    
+    GLuint qVAO, qVBO;
+    glGenVertexArrays(1, &qVAO);
+    glBindVertexArray(qVAO);
+
+    glGenBuffers(1, &qVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, qVBO);
+
+    float vertex[] = {
+        -1, -1, 0,
+         1, -1, 0,
+         1,  1, 0,
+        -1,  1, 0
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glDrawArrays(GL_QUADS, 0, 4);
+
+    glDeleteBuffers(1, &qVBO);
+    glBindVertexArray(0);
+    glDeleteVertexArrays(1, &qVAO);
+
+    glFlush();
+    glutSwapBuffers();
+
+    checkError("End of Display");
+}
+
+void (*currentDisplay)() = display1;
+void display()
+{
+    currentDisplay();
 }
 
 void mouse(int button, int state, int x, int y)
@@ -491,7 +646,19 @@ void mouseMovement(int x, int y)
 
 void key(unsigned char key, int x, int y)
 {
-    if (key == 'p')
+    if (key == '1')
+    {
+        currentDisplay = display1;
+    }
+    else if (key == '2')
+    {
+        currentDisplay = display2;
+    }
+    else if (key == '3')
+    {
+        currentDisplay = display3;
+    }
+    else if (key == 'p')
     {
         unsigned int id;
         glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[PICK_FRAMEBUFFER]);

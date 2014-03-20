@@ -39,6 +39,8 @@ std::string readFile(std::string filename)
     std::string str;
 
     in.open(filename, std::ios::in | std::ios::binary);
+    if (!in.is_open())
+        fatalError("Could not open file '" + filename + "'");
     in.seekg(0, std::ios::end);
     str.resize(in.tellg());
     in.seekg(0, std::ios::beg);
