@@ -420,6 +420,8 @@ void drawGeometryBuffers()
     gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_SPECULAR_COLOR);
     glBlitFramebuffer(0, 0, screenWidth, screenHeight,
                       HalfWidth, 0, screenWidth, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    gbuffer.UnbindForReading();
 }
 
 void display1()
@@ -532,7 +534,7 @@ void display3()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glDeleteBuffers(1, &qVBO);
     glBindVertexArray(0);

@@ -1,5 +1,6 @@
 
 #include "gbuffer.h"
+#include <iostream>
 
 GBuffer::GBuffer()
 {
@@ -101,3 +102,4 @@ void GBuffer::UnbindForRender()
     glActiveTexture(GL_TEXTURE0 + GBUFFER_NUM_TEXTURES);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
