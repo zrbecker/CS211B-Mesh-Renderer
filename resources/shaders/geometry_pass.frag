@@ -11,29 +11,29 @@ uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float shininess;
 
-layout (location = 0) out vec3 oPosition;
-layout (location = 1) out vec3 oDiffuse;
-layout (location = 2) out vec3 oNormal;
-layout (location = 3) out vec3 oTextureCoord;
-layout (location = 4) out vec3 oDiffuseColor;
-layout (location = 5) out vec3 oSpecularColor;
-layout (location = 6) out float oShininess;
+layout (location = 0) out vec4 oPosition;
+layout (location = 1) out vec4 oDiffuse;
+layout (location = 2) out vec4 oNormal;
+layout (location = 3) out vec4 oTextureCoord;
+layout (location = 4) out vec4 oDiffuseColor;
+layout (location = 5) out vec4 oSpecularColor;
+layout (location = 6) out vec4 oShininess;
 
 uniform sampler2D sampler;
 
 void main()
 {
-	oPosition = fPosition.xyz / fPosition.w;
-	vec3 highlight = vec3(0, 0, 0);
+	oPosition = fPosition;
+	vec4 highlight = vec4(0, 0, 0, 0);
 	if (objectID == selectedID)
-		highlight = vec3(0.5, 0, 0.5);
-	oDiffuse = highlight + texture(sampler, fTextureCoord).xyz;
+		highlight = vec4(0.7, 0, 0.7, 0);
+	oDiffuse = highlight + texture(sampler, fTextureCoord);
     if (!gl_FrontFacing)
-		oNormal = normalize(-fNormal);
+		oNormal = vec4(normalize(-fNormal), 1);
 	else
-		oNormal = normalize(fNormal);
-	oTextureCoord = vec3(fTextureCoord, 0.0);
-	oDiffuseColor = diffuseColor;
-	oSpecularColor = specularColor;
-	oShininess = shininess;
+		oNormal = vec4(normalize(fNormal), 1);
+	oTextureCoord = vec4(fTextureCoord, 0.0, 0.0);
+	oDiffuseColor = vec4(diffuseColor, 1);
+	oSpecularColor = vec4(specularColor, 1);
+	oShininess = vec4(vec3(shininess), 1);
 }

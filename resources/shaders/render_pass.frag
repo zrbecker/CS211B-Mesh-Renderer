@@ -44,7 +44,7 @@ void computeLightEffect(vec4 lightPos, vec3 lightColor, out vec3 diffuseEffect, 
 	vec3 H = normalize(L + V);
 
 	float diffuseComponent = max(0, dot(L, N));
-	float specularComponent = max(0, pow(dot(H, N), shininess));
+	float specularComponent = max(0, pow(dot(H, N), 50));
 	if (diffuseComponent == 0)
 		specularComponent = 0;
 
