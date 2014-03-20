@@ -3,10 +3,10 @@
 
 GBuffer::GBuffer()
 {
-    m_fbo = NULL;
+    m_fbo = 0;
     for (GLuint i = 0; i < GBUFFER_NUM_TEXTURES; ++i)
-        m_textures[i] = NULL;
-    m_depthTexture = NULL;
+        m_textures[i] = 0;
+    m_depthTexture = 0;
 }
 
 GBuffer::~GBuffer()
